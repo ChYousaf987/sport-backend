@@ -1,4 +1,3 @@
-// controllers/userController.js
 const User = require("../models/userModel");
 const RoleRequest = require("../models/roleRequestModel");
 const asyncHandler = require("express-async-handler");
@@ -10,7 +9,7 @@ const fs = require("fs");
 // Multer configuration for profile image
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const dir = "uploads/profile";
+    const dir = "Uploads/profile";
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
@@ -47,7 +46,6 @@ if (!process.env.MAIL_USER || !process.env.MAIL_PASS) {
   throw new Error("Server configuration error: Email credentials missing");
 }
 
-// ✅ FIXED: Changed createTransporter to createTransport
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -215,22 +213,19 @@ const loginUser = asyncHandler(async (req, res) => {
   });
 });
 
-
 const updateUserProfile = asyncHandler(async (req, res) => {
   try {
     const { 
       userId, 
       fullName, 
       email, 
-      phoneNumber, // 👈 Add phoneNumber
+      phoneNumber,
       location, 
       gender, 
       age, 
       description,
       country
     } = req.body;
-
-   
 
     if (!userId) {
       res.status(400);
@@ -246,7 +241,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     // Update fields if provided
     if (fullName !== undefined) user.fullName = fullName.trim();
     if (email !== undefined) user.email = email.trim().toLowerCase();
-    if (phoneNumber !== undefined) user.phoneNumber = phoneNumber.trim(); // 👈 Update phone number
+    if (phoneNumber !== undefined) user.phoneNumber = phoneNumber.trim();
     if (location !== undefined) user.location = location.trim();
     if (country !== undefined) user.country = country.trim();
     if (gender !== undefined) user.gender = gender;
@@ -267,13 +262,13 @@ const updateUserProfile = asyncHandler(async (req, res) => {
         userId: user._id,
         fullName: user.fullName,
         email: user.email,
-        phoneNumber: user.phoneNumber, // 👈 Return phone number
+        phoneNumber: user.phoneNumber,
         location: user.location,
         country: user.country,
         gender: user.gender,
         age: user.age,
         description: user.description,
-        profileImage: user.profileImage,
+        profileImage: user.profileImage ? `/${user.profileImage}` : null, // Modified to return URL path
         role: user.role,
       },
     });
@@ -295,7 +290,6 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   }
 });
 
-// Also update getCurrentUser to include phoneNumber:
 const getCurrentUser = asyncHandler(async (req, res) => {
   const { userId } = req.body;
 
@@ -316,13 +310,13 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     userId: user._id,
     fullName: user.fullName,
     email: user.email,
-    phoneNumber: user.phoneNumber, // 👈 Add phoneNumber
+    phoneNumber: user.phoneNumber,
     location: user.location,
     country: user.country,
     gender: user.gender,
     age: user.age,
     description: user.description,
-    profileImage: user.profileImage,
+    profileImage: user.profileImage ? `/${user.profileImage}` : null, // Modified to return URL path
     role: user.role,
   });
 });
@@ -519,7 +513,6 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   const user = await User.findOne({ email });
   if (!user) {
-    // For security reasons, don't reveal that the user doesn't exist
     console.log("Forgot password: User not found for email:", email);
     res.status(200).json({
       message:
@@ -530,7 +523,6 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   console.log("User found, generating reset token for:", email);
 
-  // Generate a password reset token
   const resetToken = generateOTP();
   user.resetPasswordToken = resetToken;
   user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
@@ -559,7 +551,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       message: "Password reset instructions sent to your email",
-      email: email, // Return email to frontend for use in reset form
+      email: email,
     });
   } catch (error) {
     console.error("Email sending error:", error.message);
@@ -585,7 +577,6 @@ const resetPassword = asyncHandler(async (req, res) => {
     throw new Error("Email, reset token, and new password are required");
   }
 
-  // Find user by email first
   const user = await User.findOne({ email });
   if (!user) {
     console.log(`User not found with email: ${email}`);
@@ -597,14 +588,12 @@ const resetPassword = asyncHandler(async (req, res) => {
     `User found. Checking token. User token: ${user.resetPasswordToken}, Provided token: ${token}`
   );
 
-  // Verify reset token exists
   if (!user.resetPasswordToken || !user.resetPasswordExpires) {
     console.log("No reset token found for user");
     res.status(400);
     throw new Error("Token not found. Please request a new password reset.");
   }
 
-  // Verify token matches
   if (user.resetPasswordToken !== token) {
     console.log("Token mismatch:", {
       userToken: user.resetPasswordToken,
@@ -614,14 +603,12 @@ const resetPassword = asyncHandler(async (req, res) => {
     throw new Error("Invalid token. Please check and try again.");
   }
 
-  // Verify token has not expired
   if (user.resetPasswordExpires < Date.now()) {
     console.log("Token expired. Expiry:", new Date(user.resetPasswordExpires));
     res.status(400);
     throw new Error("Token has expired. Please request a new password reset.");
   }
 
-  // Update password and clear reset token fields
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(newPassword, salt);
   user.resetPasswordToken = undefined;
@@ -656,7 +643,22 @@ const getOrganizers = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error("No organizers found");
   }
-  res.status(200).json(organizers);
+
+  // Map organizers to format profileImage as a URL path
+  const formattedOrganizers = organizers.map((user) => ({
+    _id: user._id,
+    fullName: user.fullName,
+    email: user.email,
+    location: user.location,
+    country: user.country,
+    gender: user.gender,
+    age: user.age,
+    description: user.description,
+    profileImage: user.profileImage ? `/${user.profileImage}` : null, // Modified to return URL path
+    role: user.role,
+  }));
+
+  res.status(200).json(formattedOrganizers);
 });
 
 module.exports = {
@@ -665,7 +667,7 @@ module.exports = {
   loginUser,
   getCurrentUser,
   updateUserProfile,
-  upload, // Export upload middleware
+  upload,
   submitRoleChange,
   getRoleRequests,
   manageRoleRequest,

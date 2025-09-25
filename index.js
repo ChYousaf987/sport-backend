@@ -24,7 +24,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Static folder for uploads
-app.use("/uploads", express.static(path.join(__dirname, "Uploads")));
+app.use("/Uploads", express.static(path.join(__dirname, "Uploads"))); // Changed to /Uploads
 
 // Routes
 app.use("/api/users", userRoutes);
