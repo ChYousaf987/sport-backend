@@ -5,6 +5,7 @@ const nodemailer = require("nodemailer");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const bcrypt = require("bcrypt"); // Added for resetPassword
 
 // Multer configuration for profile image
 const storage = multer.diskStorage({
@@ -24,7 +25,7 @@ const storage = multer.diskStorage({
 
 const fileFilter = (req, file, cb) => {
   const fileTypes = /jpeg|jpg|png/;
-  const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
+  const extname = fileTypes.test(path.extname(file.originalName).toLowerCase());
   const mimetype = fileTypes.test(file.mimetype);
   if (extname && mimetype) {
     return cb(null, true);
@@ -268,7 +269,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
         gender: user.gender,
         age: user.age,
         description: user.description,
-        profileImage: user.profileImage ? `/${user.profileImage}` : null, // Modified to return URL path
+        profileImage: user.profileImage ? `/${user.profileImage}` : null,
         role: user.role,
       },
     });
@@ -316,7 +317,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     gender: user.gender,
     age: user.age,
     description: user.description,
-    profileImage: user.profileImage ? `/${user.profileImage}` : null, // Modified to return URL path
+    profileImage: user.profileImage ? `/${user.profileImage}` : null,
     role: user.role,
   });
 });
@@ -644,7 +645,6 @@ const getOrganizers = asyncHandler(async (req, res) => {
     throw new Error("No organizers found");
   }
 
-  // Map organizers to format profileImage as a URL path
   const formattedOrganizers = organizers.map((user) => ({
     _id: user._id,
     fullName: user.fullName,
@@ -654,11 +654,35 @@ const getOrganizers = asyncHandler(async (req, res) => {
     gender: user.gender,
     age: user.age,
     description: user.description,
-    profileImage: user.profileImage ? `/${user.profileImage}` : null, // Modified to return URL path
+    profileImage: user.profileImage ? `/${user.profileImage}` : null,
     role: user.role,
   }));
 
   res.status(200).json(formattedOrganizers);
+});
+
+const getPlayers = asyncHandler(async (req, res) => {
+  const players = await User.find({ role: "user" }).select(
+    "fullName email location country gender age description profileImage role"
+  );
+  console.log('Players found:', players); // Debug log
+  if (!players || players.length === 0) {
+    res.status(404);
+    throw new Error("No players found");
+  }
+  const formattedPlayers = players.map((user) => ({
+    _id: user._id,
+    fullName: user.fullName,
+    email: user.email,
+    location: user.location,
+    country: user.country,
+    gender: user.gender,
+    age: user.age,
+    description: user.description,
+    profileImage: user.profileImage ? `/${user.profileImage}` : null,
+    role: user.role,
+  }));
+  res.status(200).json(formattedPlayers);
 });
 
 module.exports = {
@@ -674,4 +698,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   getOrganizers,
+  getPlayers, // Add to exports
 };

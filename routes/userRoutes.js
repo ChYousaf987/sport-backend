@@ -1,4 +1,3 @@
-// routes/userRoutes.js
 const express = require("express");
 const router = express.Router();
 const {
@@ -7,13 +6,14 @@ const {
   loginUser,
   getCurrentUser,
   updateUserProfile,
-  upload, // Import the upload middleware
+  upload,
   submitRoleChange,
   getRoleRequests,
   manageRoleRequest,
   forgotPassword,
   resetPassword,
   getOrganizers,
+  getPlayers, // Import the new function
 } = require("../controllers/userController");
 
 // Apply multer middleware to the update-profile route
@@ -27,9 +27,8 @@ router.post("/reset-password", resetPassword);
 router.post("/me", getCurrentUser);
 router.post("/role-change", submitRoleChange);
 router.get("/role-requests", getRoleRequests);
-router.post("/manage-role-request", manageRoleRequest)
+router.post("/manage-role-request", manageRoleRequest);
 router.get("/organizers", getOrganizers);
-
-
+router.get("/players", getPlayers); // New route for users with role: "user"
 
 module.exports = router;
