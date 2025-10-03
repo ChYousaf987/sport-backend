@@ -13,7 +13,8 @@ const {
   forgotPassword,
   resetPassword,
   getOrganizers,
-  getPlayers, // Import the new function
+  getPlayers,
+  getCurrentPlayer, // Import the new function
 } = require("../controllers/userController");
 
 // Apply multer middleware to the update-profile route
@@ -25,10 +26,12 @@ router.post("/login", loginUser);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/me", getCurrentUser);
+router.post("/play",getCurrentPlayer)
 router.post("/role-change", submitRoleChange);
 router.get("/role-requests", getRoleRequests);
 router.post("/manage-role-request", manageRoleRequest);
 router.get("/organizers", getOrganizers);
 router.get("/players", getPlayers); // New route for users with role: "user"
+
 
 module.exports = router;
