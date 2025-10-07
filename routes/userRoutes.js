@@ -15,6 +15,8 @@ const {
   getOrganizers,
   getPlayers,
   getPlayerById,
+  getPlayers,
+  getCurrentPlayer, // Import the new function
 } = require("../controllers/userController");
 
 router.post("/signup", signupUser);
@@ -30,5 +32,6 @@ router.post("/reset-password", resetPassword);
 router.post("/organizers", getOrganizers);
 router.post("/players", getPlayers);
 router.post("/player", getPlayerById);
+
 
 module.exports = router;
