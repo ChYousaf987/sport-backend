@@ -13,22 +13,22 @@ const {
   forgotPassword,
   resetPassword,
   getOrganizers,
-  getPlayers, // Import the new function
+  getPlayers,
+  getPlayerById,
 } = require("../controllers/userController");
-
-// Apply multer middleware to the update-profile route
-router.post("/update-profile", upload, updateUserProfile);
 
 router.post("/signup", signupUser);
 router.post("/verify-otp", verifyOTPUser);
 router.post("/login", loginUser);
+router.post("/me", getCurrentUser);
+router.post("/update-profile", upload, updateUserProfile);
+router.post("/submit-role-change", submitRoleChange);
+router.post("/role-requests", getRoleRequests);
+router.post("/manage-role-request", manageRoleRequest);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
-router.post("/me", getCurrentUser);
-router.post("/role-change", submitRoleChange);
-router.get("/role-requests", getRoleRequests);
-router.post("/manage-role-request", manageRoleRequest);
-router.get("/organizers", getOrganizers);
-router.get("/players", getPlayers); // New route for users with role: "user"
+router.post("/organizers", getOrganizers);
+router.post("/players", getPlayers);
+router.post("/player", getPlayerById);
 
 module.exports = router;

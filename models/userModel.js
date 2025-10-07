@@ -1,45 +1,47 @@
-// models/userModel.js
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
 
-this const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   fullName: {
     type: String,
-    required: [true, "Full name is required"],
+    required: true,
     trim: true,
   },
   email: {
     type: String,
-    required: [true, "Email is required"],
+    required: true,
     unique: true,
-    lowercase: true,
     trim: true,
-    match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
+    lowercase: true,
   },
   password: {
     type: String,
-    required: [true, "Password is required"],
-    minlength: [6, "Password must be at least 6 characters"],
+    required: true,
+  },
+  phoneNumber: {
+    type: String,
+    trim: true,
+    default: "",
   },
   location: {
     type: String,
-    required: [true, "Location is required"],
     trim: true,
+    default: "",
   },
-  country: {  // 👈 New field
+  country: {
     type: String,
     trim: true,
     default: "",
   },
   gender: {
     type: String,
-    required: [true, "Gender is required"],
-    enum: ["Male", "Female", "Neither Male Nor Female"],
+    enum: ["Male", "Female", "Neither Male Nor Female", ""],
+    default: "",
   },
   age: {
     type: Number,
-    required: [true, "Age is required"],
-    min: [13, "Age must be at least 13"],
+    min: 13,
+    max: 120,
+    default: null,
   },
   description: {
     type: String,
@@ -52,42 +54,113 @@ this const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["user", "organizer"],
+    enum: ["user", "organizer", "admin"],
     default: "user",
   },
+  roleChangeRequests: [
+    {
+      requestedRole: {
+        type: String,
+        enum: ["user", "organizer", "admin"],
+        required: true,
+      },
+      status: {
+        type: String,
+        enum: ["pending", "approved", "rejected"],
+        default: "pending",
+      },
+      submittedAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
   otp: {
     type: String,
-    default: null,
-  },
-  isVerified: {
-    type: Boolean,
-    default: false,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
   },
   resetPasswordToken: {
     type: String,
-    default: null,
   },
   resetPasswordExpires: {
     type: Date,
-    default: null,
   },
-});
-
-// Hash password before saving
-userSchema.pre("save", async function (next) {
-  if (this.isModified("password")) {
-    this.password = await bcrypt.hash(this.password, 10);
-  }
-  next();
-});
-
-// Compare password for login
-userSchema.methods.comparePassword = async function (password) {
-  return await bcrypt.compare(password, this.password);
-};
+  // Additional fields from Edit_Player_Profile.jsx
+  preferredSport: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  skillLevel: {
+    type: String,
+    enum: ["Beginner", "Intermediate", "Advanced", "Professional", ""],
+    default: "",
+  },
+  playingPosition: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  availability: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  totalMatchesPlayed: {
+    type: Number,
+    default: 0,
+  },
+  winLosses: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  trophiesAndMedals: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  rankingAndRating: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  teamSizePreference: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  maxPlayersPerTeam: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  participationType: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  registrationLimit: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  paymentMethod: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  profileVisible: {
+    type: Boolean,
+    default: true,
+  },
+  allowNotifications: {
+    type: Boolean,
+    default: true,
+  },
+  allowOrganizerRole: {
+    type: Boolean,
+    default: false,
+  },
+}, { timestamps: true });
 
 module.exports = mongoose.model("User", userSchema);
